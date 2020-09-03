@@ -28,22 +28,294 @@
 											
 	Hibernate uses JDBC 
 	in the back ground it uses the JDBC and hibernate handles all the low level Sql functions
+	IMP: we have to implicitly create the data base and table as mention in code
 	-----------------------------------------------------------------------------------------------------------
+	Main players:
+	1.session factory:
+			reads the configration file 
+			creates the session objects
+			it is a heavy wieght object
+			only created once in your application
+			
 	Session:A Session is used to get a physical connection with a database. The Session object is 
 		    lightweight and designed to be instantiated each time an interaction is needed with the database. 
 			Persistent objects are saved and retrieved through a Session object.
+			1.wraps for jdbc conection to db
+			2.used to inteact with the DB
+			3.short lived object
+			4.obtained from the session factory
 
 	The session objects should not be kept open for a long time because they are not usually thread safe 
 	and they should be created and destroyed them as needed. The main function of the Session is to offer, 
 	create, read, and delete operations for instances of mapped entity classes.
 	------------------------------------------------------------------------------------------------------------
+								HIBERNATE CONFIGRATION WITH ANNOTATIONS
+	Development process:
+	1.add hibernate configration file
+	2.annotate java class
+	3.perform data base functions
 	
+	NOTE: if you are using the java 9 or above
+	 add additional dependency 
+	 <dependency>
+   <groupId>javax.xml.bind</groupId>
+   <artifactId>jaxb-api</artifactId>
+   <version>2.2.8</version>
+</dependency>
+
+<dependency>
+   <groupId>com.sun.xml.bind</groupId>
+   <artifactId>jaxb-core</artifactId>
+   <version>2.2.8</version>
+</dependency>
+
+<dependency>
+   <groupId>com.sun.xml.bind</groupId>
+   <artifactId>jaxb-impl</artifactId>
+   <version>2.2.8</version>
+</dependency>
+
+<dependency>
+   <groupId>com.sun.activation</groupId>
+   <artifactId>javax.activation</artifactId>
+   <version>1.2.0</version>
+</dependency>
+
+
+NOTE if you are using the java 8 add dependency 
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>5.4.21.Final</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.21</version>
+</dependency>
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	Step 1: Creating the configration file:
+	______________________________________________________________________________________________________________________________________________________
+	since hibernate uses jdbc,
+	we have to provide the jdbc link ,userId, password.
 	
+	File Name: hibernate.cfg.xml
+	<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+
+    <session-factory>
+
+        <!-- JDBC Database connection settings -->
+        <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="connection.url">jdbc:mysql://localhost:3306/studentdb?useSSL=false&amp;serverTimezone=UTC</property>
+        <property name="connection.username">root</property>
+        <property name="connection.password">root</property>
+
+        <!-- JDBC connection pool settings ... using built-in test pool -->
+        <property name="connection.pool_size">1</property>
+
+        <!-- Select our SQL dialect -->
+        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+
+        <!-- Echo the SQL to stdout -->
+        <property name="show_sql">true</property>
+
+		<!-- Set the current session context -->
+		<property name="current_session_context_class">thread</property>
+ 
+    </session-factory>
+
+</hibernate-configuration>
 	
+STEP 2 :mapping the persistance class
+	    there are two ways to do this
+			1. by xml mapping 
+			2. using java annotations
+
+		USING the java annotations
+		
+		package com.dxc.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="student")
+public class Student {
+
 	
+	public Student() {
+		super();
+	}
+	public Student(int rollNo, String firstName, String lastName) {
+		super();
+		this.rollNo = rollNo;
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
+	@Id
+	@Column(name="roll_no")		// if you want it to be auto generated then 
+									@GeneratedValue(strategy=GenerationType.IDENTITY)
+								//to create the own generator: create the implementation of  org.hibernate.id.IdentifierGenerator
+									and override the method:public serializable generate()
+								//to change the auto increment values then in mysql: 
+										ALTER TABLE databasename.table_name AUTO_INCREMENT=3000
+								//to reset and clean 
+										truncate  database_name.table_name
+	private int rollNo;
 	
+	@Column(name="first_name")
+	private String firstName;
 	
+	@Column(name="last_name")
+	private String lastName;
 	
+	public int getRollNo() {
+		return rollNo;
+	}
+	public void setRollNo(int rollNo) {
+		this.rollNo = rollNo;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	@Override
+	public String toString() {
+		return "Student [rollNo=" + rollNo + ", firstName=" + firstName + ", lastName=" + lastName + "]";
+	}
+	}
+	-----------------------------------------------------------------------------------------------------------------------------------------------
+	Step 3: in our main method where we will write the code to persist the object
+	
+		app.java(main)
+		
+		package com.dxc.application;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import com.dxc.model.Student;
+
+public class App {
+
+	public static void main(String[] args) {
+		
+		
+		// create the session factory object with the help of Configration class from hibernate
+		SessionFactory factory= new Configuration()
+				.configure("hibernate.cfg.xml")	//by default it will look for the .cfg.xml file
+												// or ..configure(hibernate.cfg.xml)
+				.addAnnotatedClass(Student.class)
+				.buildSessionFactory();
+		//create session
+		Session session=factory.getCurrentSession();
+		
+		try {
+			//create the new student object
+			System.out.println("new object is created");
+			Student student=new Student(1,"sharat","gangal");
+			
+			//start the transaction
+			System.out.println("starting the new transaction");
+			session.beginTransaction();
+			
+			//save the student object
+			System.out.println("saving the obj");
+			session.save(student);
+			
+			//commit the transaction
+			System.out.println("commiting the transaction");
+			session.getTransaction().commit();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			System.out.println("closing the session object");
+			session.close();
+		}
+	}
+	
+}
+													RUN THE APP>JAVA
+======================================================================================================================================================
+		TO RETRIVE THE DATA FROM THE DATA BASE
+			//retriving the student
+			session=factory.getCurrentSession();
+			session.beginTransaction();
+			
+			//getting the student from the DB
+			//if the student is not present it will return null
+			Student studentFromDB=session.get(Student.class, 2);
+			System.out.println("student from the DB : "+studentFromDB);
+			
+			//commit the transaction
+			session.getTransaction().commit();
+=====================================================================================================================================================
+		To Retrive all the data from the batabase
+		List<Student> students=session.createQuery("from Student")
+									  .getResultList();
+====================================================================================================================================================
+		To retrive the student based on the char
+		List<Student> students=session.createQuery("from student s where s.lastName="gangal")// use the property name no coloum name	
+									  .getResultList();
+===================================================================================================================================================
+		To Retrive the data with the help of the LIKE operator
+		List<Student> students=session.createQuery(from student s where s.lastName LIKE '%gal')
+									  .getResultList();
+===================================================================================================================================================				
+				
+									NOTE: Special Note about Deprecated Method in Hibernate 5.2
+					If you are using Hibernate 5.2 or higher, then the Query list() method has been deprecated.
+
+					In your code you should make the following update:
+
+					Replace
+
+					session.createQuery("from Student").list()
+
+					With
+
+					session.createQuery("from Student").getResultList()
+
+					Fullscreen
+					Expand
+					192. Querying Objects with Hibernate - Overview
+					194. Querying Objects with Hibernate - Write Some …
+=======================================================================================================================================================
+							
+NOTE : for detailed loging in the console
+ go to :https://www.udemy.com/course/spring-hibernate-tutorial/learn/lecture/5835894#overview
+ =====================================================================================================================================================
+											UPDATE THE OBJECTS USING HIBERNATE
+		To Update only one student
+		1. Get the student object 
+		2. update the returned object and save that object 
+
+			Student myStudent=session.get(Student.class, id);
+			mysudent,setXXX(..);
+			
+			session.hetTransaction().commit();
+		To Update all the students
+		session.createQuery(from table_name set fieldName="....").executeUpdate();
+			
 	
 	
 	
@@ -85,10 +357,10 @@
 </dependency>
  ----------------------------------------------------------------------------------
  ================================================================================================================================================
+ FILE : HIBERNATE CONFIGATION XML
+		name: hibernate.cfg.xml 
  <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE hibernate-configuration SYSTEM "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
- 
- 
 <hibernate-configuration>
     <session-factory>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
@@ -101,4 +373,68 @@
        <mapping resource="Employee.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>
+--------------------------------------------------------------------------------------------------------------
+FILE EMPLOYEE HIBERNATE CLASS FILE
+NAME: Employee.hbm.xml 
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.stackroute.demos.Employee"  table="employee_details">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned"/>
+        </id>
+        <property name="name" type="java.lang.String">
+            <column name="empname"  length="12"/>
+        </property>
+        <property name="basic" type="int">
+            <column name="basic" length="5" />
+        </property>
+    </class>
+</hibernate-mapping>
+______________________________________________________________________________________________________________________________________________________
+demo code 2:
+ dependency:
+ 
+  <dependencies>
+   <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+ 
+        <!-- MySQL -->
+       <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.15</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/javax.persistence/javax.persistence-api -->
+<dependency>
+    <groupId>javax.persistence</groupId>
+    <artifactId>javax.persistence-api</artifactId>
+    <version>2.2</version>
+</dependency>
 
+-----------------------------------------------------------------------------------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+ 
+ 
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">password</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/empDB</property>
+        <property name="show_sql">true</property>
+        <property name="format_sql">false</property>
+        <property name="hibernate.hbm2ddl.auto">update</property> 
+       <mapping class="com.niit.Book"/>
+    </session-factory>
+</hibernate-configuration>
+______________________________________________________________________________________________________________________________________________________

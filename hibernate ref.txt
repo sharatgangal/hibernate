@@ -1,0 +1,104 @@
+
+	1. what is hibernate
+	2.benifits of hibernate
+	3.code snippets
+	=============================================================================================================
+	1.What is hibernate?
+	  a frame work for persisting the data/java objects
+	  
+	  Java-app------------> Hibernate--------------> database
+	2.benifits of hibernate?
+	  1.handles all the low level SQL
+	  2.minimizes the amount of JDBC code you have to develop
+	  3.hibernate provides the Object to relational mapping(ORM)
+	3. Object to relational mapping?(ORM)
+	   we teling how to store the data is stored in the data base with the help of mapping
+	------------------------------------------------------------------------------------------------------------
+	 create the object 
+	 *To Save
+	 int Id=session.save(object)-->  hibernate saves the java object based on the fields and 
+	 flashback(in the jdbc we used to write the sql code to save the obejct but in this case we dont do it)
+	 *To Retrive
+	 object obj=session.get(className.class,theId);
+	 *To Retrive All
+	  Query q= session.createQuery("from TableName/className");
+	  List<ClassName> ref=q.list();
+	------------------------------------------------------------------------------------------------------------
+											HIBERNATE AND JDBC RELATION
+											
+	Hibernate uses JDBC 
+	in the back ground it uses the JDBC and hibernate handles all the low level Sql functions
+	-----------------------------------------------------------------------------------------------------------
+	Session:A Session is used to get a physical connection with a database. The Session object is 
+		    lightweight and designed to be instantiated each time an interaction is needed with the database. 
+			Persistent objects are saved and retrieved through a Session object.
+
+	The session objects should not be kept open for a long time because they are not usually thread safe 
+	and they should be created and destroyed them as needed. The main function of the Session is to offer, 
+	create, read, and delete operations for instances of mapped entity classes.
+	------------------------------------------------------------------------------------------------------------
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	==============================================================================================================================================
+	dependency:
+	 <dependencies>
+   <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+ ----------------------------------------------------------------------------------
+        <!-- MySQL -->
+       <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.15</version>
+</dependency>
+ ----------------------------------------------------------------------------------
+ ================================================================================================================================================
+ <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+ 
+ 
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">password</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/empDB</property>
+        <property name="show_sql">true</property>
+        <property name="hibernate.hbm2ddl.auto">update</property> 
+       <mapping resource="Employee.hbm.xml"/>
+    </session-factory>
+</hibernate-configuration>
+

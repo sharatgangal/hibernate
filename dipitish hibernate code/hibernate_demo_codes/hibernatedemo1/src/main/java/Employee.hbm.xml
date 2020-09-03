@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.stackroute.demos.Employee"  table="employee_details">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned"/>
+        </id>
+        <property name="name" type="java.lang.String">
+            <column name="empname"  length="12"/>
+        </property>
+        <property name="basic" type="int">
+            <column name="basic" length="5" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.stackroute.model.Customer"  table="customer_details1">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned"/>
+        </id>
+        <property name="customerName" type="java.lang.String">
+            <column name="customername"  length="30"/>
+        </property>
+        <property name="address" type="java.lang.String">
+            <column name="customeraddress" length="40" />
+        </property>
+    </class>
+</hibernate-mapping>
